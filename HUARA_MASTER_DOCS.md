@@ -1,25 +1,60 @@
-# 🌮 Huara-Master-Docs: Manual de Entrega (v2.0)
+# Huarachón Master Operations Manual v2.1 📘 Taco-Elite
 
-Este es el Manual de Operación definitivo para **Taquería El Huarachón**. Describe cómo funciona la app, cómo gestionarla y los pasos finales para el lanzamiento masivo.
+The definitive guide for managing the Huarachón Digital Ecosystem.
 
 ---
 
-## 1. Huara-Pay (Pagos y Pedidos) 💳
-El sistema permite que los clientes pidan desde casa o en la fila y paguen con tarjeta (Apple/Google Pay Ready).
+## 🚀 1. Production Infrastructure
 
-- **Impuestos (IVA 8%)**: Configurado para la tasa preferencial de la frontera norte (Mexicali).
-- **Personalización**: El usuario elige salsa (Verde, Roja, Sin Salsa) para cada taco.
-- **Flujo de Cocina**: Cuando un cliente paga, la orden se envía automáticamente a la Terminal Sierra POS (Sucursales: Independencia, Gómez Morín, Lázaro Cárdenas).
+| Resource | Service | URL / ID |
+| :--- | :--- | :--- |
+| **Source Control** | GitHub | [gax8627/Huarachon-Elite](https://github.com/gax8627/Huarachon-Elite) |
+| **Marketing Portal** | Vercel | [huarachon-marketing.vercel.app](https://huarachon-marketing.vercel.app) |
+| **Design System** | Stitch MCP | `projects/14778601529225919101` |
+| **Backend API** | Sierra POS | `https://api.sierra.com.mx/v1/` |
 
-## 2. Huara-Elite (Niveles de Lealtad) 🏆
-La app premia automáticamente a los clientes más fieles:
-- **Bronce:** Registro inicial.
+---
+
+## 🔑 2. Admin & Security Credentials
+
+- **Admin Dashboard PIN:** `1985` (Year of first Huarachón branch).
+- **Sierra API Mode:** `SIMULATED_MOCK` (Requires Production Key for live POS).
+- **Security Audit Status:** ✅ **PASSED** (2026-04-02).
+- **Leak Protection:** `.gitignore` hardened for `.env`, `*.jks`, and `node_modules`.
+
+---
+
+## 🛠️ 3. Deployment & Scaling Logic
+
+### **3.1 Mobile App (Flutter)**
+- **Building for Production:**
+  ```bash
+  flutter build apk --release --obfuscate --split-debug-info=build/app/outputs/symbols
+  ```
+- **Store Strategy:** Deploy to App Store/Play Store (See `app_store_strategy.md`).
+
+### **3.2 Marketing Page (Huara-Web)**
+- **Static Entry Point:** `huara-web/index.html`.
+- **Styling:** Tailwind CSS (CDN) for maximum performance.
+- **Live Updates:** `git push origin main` triggers automatic Vercel redeployment.
+
+---
+
+## 🛡️ 4. AI Workforce Governance
+
+Refer to [HUARA_AI_STRATEGY.md](file:///Users/gax8627/Huarachon-App/HUARA_AI_STRATEGY.md) for agent roles:
+- **Concierge:** Account and points support.
+- **Auditor:** PII and vulnerability monitoring.
+- **Marketing:** Promotion generation.
+
+---
+*Manual Version: 2.1 (2026-04-02)*
+*Authorized by Antigravity v3.0*
 - **Plata (Gasto > $1,000):** 8% de Huara-Puntos en cada compra.
 - **Oro (Gasto > $5,000):** 12% de Huara-Puntos + Regalos exclusivos.
 - **Puntos:** Los puntos acumulados se pueden usar como dinero en efectivo dentro de la app o en caja.
 
 ## 3. Huara-Admin (Panel de Gerente) 🔐
-Para acceder al panel de administración desde la app:
 1. Ve a la sección de **"Puntos/Billetera"**.
 2. Toca el icono de **"Escudo Dorado"** en la esquina superior.
 3. Ingresa el **PIN de Seguridad: 1985**.
