@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huarachón Elite | Los Tacos más rápidos de Mexicali</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --huara-red: #D32F2F;
+            --huara-gold: #FFC107;
+            --background: #0D0D0D;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: white;
+            overflow-x: hidden;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #FFC107, #FF8F00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 8s infinite;
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="selection:bg-yellow-400 selection:text-black">
+
+    <!-- Animated Background Orbs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-900/20 blur-[120px] rounded-full animate-pulse-slow"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-yellow-900/10 blur-[100px] rounded-full animate-pulse-slow" style="animation-delay: 2s"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 w-full px-6 py-4 glass border-b-0">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-red-600/30">H</div>
+                <span class="font-bold text-xl tracking-tight uppercase tracking-widest">Huarachón <span class="text-yellow-400 italic">Elite</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+                <a href="#menu" class="hover:text-yellow-400 transition-colors">Menú</a>
+                <a href="#rewards" class="hover:text-yellow-400 transition-colors">Huarafans</a>
+                <a href="#sucursales" class="hover:text-yellow-400 transition-colors">Sucursales</a>
+            </div>
+            <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-full font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-600/40">
+                Pide Ahora
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-20 pb-32 px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+            <div class="relative z-10 space-y-8 text-center lg:text-left">
+                <div class="inline-block px-4 py-1.5 rounded-full glass border-yellow-400/30 text-yellow-400 text-xs font-bold tracking-widest uppercase mb-4">
+                    🔥 El Sabor Premium de Mexicali
+                </div>
+                <h1 class="text-6xl md:text-8xl font-black leading-[0.95] tracking-tighter">
+                    Tacos que <br>
+                    <span class="text-gradient">Encienden</span> <br>
+                    Tu Día.
+                </h1>
+                <p class="text-xl text-white/50 max-w-lg leading-relaxed mx-auto lg:mx-0">
+                    Tradición Huarafan con un toque de innovación. Gana puntos, sube de nivel y saborea la victoria en cada mordida.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
+                    <button class="bg-white text-black px-10 py-5 rounded-2xl font-black text-lg hover:bg-yellow-400 hover:scale-105 transition-all shadow-xl shadow-white/5">
+                        Descarga la App
+                    </button>
+                    <button class="glass px-10 py-5 rounded-2xl font-bold text-lg hover:bg-white/5 transition-all border-white/10">
+                        Ver Menú 🌮
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative group">
+                <div class="absolute inset-0 bg-red-600/20 blur-[100px] rounded-full animate-pulse"></div>
+                <div class="relative glass p-4 rounded-[48px] border-white/10 rotate-2 group-hover:rotate-0 transition-all duration-700 shadow-2xl">
+                    <img 
+                        src="https://tb-static.uber.com/prod/image-proc/processed_images/4f9785b356ab7307f08fb08e199e5d9f/c67fc65e9b4e16a553eb7574fba090f1.jpeg" 
+                        alt="Súper Huarachón" 
+                        class="rounded-[40px] w-full aspect-[4/3] object-cover"
+                    >
+                    <div class="absolute -bottom-8 -left-8 glass p-6 rounded-3xl border-yellow-400/20 shadow-2xl animate-bounce" style="animation-duration: 4s">
+                        <span class="block text-yellow-400 font-black text-3xl">🌟 4.9/5</span>
+                        <span class="text-[10px] text-white/40 font-bold uppercase tracking-[0.2em]">Más de 50,000 Huarafans</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rewards Section -->
+    <section id="rewards" class="py-32 px-6 border-t border-white/5 bg-white/[0.01]">
+        <div class="max-w-7xl mx-auto space-y-24">
+            <div class="text-center space-y-4">
+                <h2 class="text-4xl md:text-6xl font-black italic tracking-tighter uppercase">Ecosistema <span class="text-red-600">Huara-Elite</span></h2>
+                <div class="w-24 h-1.5 bg-red-600 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-10">
+                <div class="glass p-10 rounded-[40px] group hover:border-yellow-400/40 transition-all cursor-pointer">
+                    <div class="text-6xl mb-6">🥉</div>
+                    <h3 class="text-2xl font-black mb-4 uppercase">Bronce</h3>
+                    <p class="text-white/40 leading-relaxed">Tu primer paso como Huarafan. Gana 2% en cada compra y acceso a promos locales.</p>
+                </div>
+                <div class="glass p-10 rounded-[40px] border-yellow-400/20 bg-yellow-400/[0.02] transform scale-105 shadow-2xl">
+                    <div class="text-6xl mb-6">🥈</div>
+                    <h3 class="text-2xl font-black mb-4 uppercase text-yellow-400">Plata</h3>
+                    <p class="text-white/40 leading-relaxed italic font-medium">8% de Huara-Puntos acumulables. El nivel favorito de Mexicali.</p>
+                </div>
+                <div class="glass p-10 rounded-[40px] group hover:border-yellow-400/40 transition-all cursor-pointer">
+                    <div class="text-6xl mb-6">🥇</div>
+                    <h3 class="text-2xl font-black mb-4 uppercase">Oro</h3>
+                    <p class="text-white/40 leading-relaxed underline">12% de Cashback total + Regalo de cumpleaños y acceso VIP a nuevas sucursales.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-20 px-6 border-t border-white/5 text-center mt-20">
+        <div class="max-w-7xl mx-auto space-y-8">
+            <div class="text-white/10 font-bold tracking-widest uppercase">Tradición & Click • Mexicali, B.C.</div>
+            <div class="w-full h-[1px] bg-white/5"></div>
+            <p class="text-white/20 text-xs">© 2026 Taquería El Huarachón. Todos los productos están sujetos a disponibilidad en sucursal.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

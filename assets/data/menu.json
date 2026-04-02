@@ -1,0 +1,46 @@
+{
+  "categories": [
+    {
+      "name": "Especialidades 🌟",
+      "items": [
+        {"name": "Taco Huarachón", "price": 101, "desc": "Asada y queso en tortilla de harina especial.", "image": "https://tb-static.uber.com/prod/image-proc/processed_images/4f9785b356ab7307f08fb08e199e5d9f/c67fc65e9b4e16a553eb7574fba090f1.jpeg"},
+        {"name": "Súper Taco Huarachón", "price": 166, "desc": "Doble queso, cebollitas y chiles toreados.", "image": "https://tb-static.uber.com/prod/image-proc/processed_images/4f9785b356ab7307f08fb08e199e5d9f/c67fc65e9b4e16a553eb7574fba090f1.jpeg"},
+        {"name": "Súper Taco Doble", "price": 251, "desc": "Dos tortillas grandes con doble porción de carne.", "image": "https://tb-static.uber.com/prod/image-proc/processed_images/4f9785b356ab7307f08fb08e199e5d9f/c67fc65e9b4e16a553eb7574fba090f1.jpeg"}
+      ]
+    },
+    {
+      "name": "Tacos 🌮",
+      "items": [
+        {"name": "Taco de Asada", "price": 56, "desc": "Tradicional con aguacate y salsa.", "image": "https://tb-static.uber.com/prod/image-proc/processed_images/1ac8ab6d9247958e9397cd363ddbb4b5/bc9c318a9c96996e2d990faf2b0c65f6.jpeg"},
+        {"name": "Taco al Pastor", "price": 56, "desc": "Cerdo marinado con especias.", "image": "https://tb-static.uber.com/prod/image-proc/processed_images/418e5e827b29fe5e122d9a9929a916b0/bc9c318a9c96996e2d990faf2b0c65f6.jpeg"},
+        {"name": "Taco de Pollo", "price": 56, "desc": "Pechuga a la plancha jugosa."},
+        {"name": "Taco de Tripa", "price": 76, "desc": "Blandita o doradita a elegir."},
+        {"name": "Taco de Fajita de Asada", "price": 81, "desc": "Carne Premium cortada en tiras."}
+      ]
+    },
+    {
+      "name": "Quesadillas & Mulas 🧀",
+      "items": [
+        {"name": "Quesadilla con Carne", "price": 116, "desc": "Melted cheese con tu carne favorita."},
+        {"name": "Quesadilla Sencilla", "price": 73, "desc": "Queso fundido en harina o maíz."},
+        {"name": "Súper Quesadilla", "price": 126, "desc": "Enorme tortilla de harina."},
+        {"name": "Mula de Asada", "price": 86, "desc": "Doble tortilla con queso y carne."}
+      ]
+    },
+    {
+      "name": "Parrilladas 🍱",
+      "items": [
+        {"name": "Parrillada Huarachón (3 pers)", "price": 495, "desc": "Mix de carnes, frijoles y quesadillas."},
+        {"name": "Parrillada Individual", "price": 185, "desc": "Nuestra famosa parrilla personal."}
+      ]
+    },
+    {
+      "name": "Bebidas 🥤",
+      "items": [
+        {"name": "Horchata Huarachón", "price": 50, "desc": "Casera con canela."},
+        {"name": "Jamaica Fresh", "price": 50, "desc": "Refrescante y natural.", "image": "https://tb-static.uber.com/prod/image-proc/processed_images/09718992aabf46ad1a2b08c2b6659ac9/bc9c318a9c96996e2d990faf2b0c65f6.jpeg"},
+        {"name": "Sodas (355ml)", "price": 53, "desc": "Coca-Cola, Fresca, Sprite."}
+      ]
+    }
+  ]
+}
