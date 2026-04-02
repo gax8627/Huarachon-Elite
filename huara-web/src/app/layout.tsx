@@ -43,7 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${roboto.variable} ${montserrat.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#0D0D0D] text-white font-[var(--font-roboto)]">
+      <body className="min-h-full flex flex-col text-white font-[var(--font-roboto)]">
         {children}
       </body>
     </html>
