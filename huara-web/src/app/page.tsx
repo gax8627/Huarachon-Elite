@@ -3,7 +3,20 @@
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 
-/* ─── Menu Data (mirrors Flutter menu.json) ─── */
+/* ─── Real assets from taqueriaelhuarachon.com ─── */
+const LOGO = "https://taqueriaelhuarachon.com/wp-content/uploads/2023/10/Objeto-inteligente-vectorial-806x1024.webp";
+const PALADAR_HEADER = "https://taqueriaelhuarachon.com/wp-content/uploads/2023/10/PALADAR-1024x328.webp";
+
+const FOOD_PHOTOS = [
+  "https://taqueriaelhuarachon.com/wp-content/uploads/2023/11/BJ1A8970-scaled.webp",
+  "https://taqueriaelhuarachon.com/wp-content/uploads/2023/11/BJ1A8511-scaled.webp",
+  "https://taqueriaelhuarachon.com/wp-content/uploads/2023/11/BJ1A8403-scaled.webp",
+  "https://taqueriaelhuarachon.com/wp-content/uploads/2023/11/BJ1A8034-scaled.webp",
+  "https://taqueriaelhuarachon.com/wp-content/uploads/2023/11/BJ1A7024-scaled.webp",
+  "https://taqueriaelhuarachon.com/wp-content/uploads/2023/11/BJ1A2897-scaled.webp",
+];
+
+/* ─── Menu Data (synced with Flutter menu.json) ─── */
 const MENU = {
   categories: [
     {
@@ -51,10 +64,29 @@ const MENU = {
   ],
 };
 
+/* ─── Branches with REAL hours from taqueriaelhuarachon.com ─── */
 const BRANCHES = [
-  { name: "Independencia", address: "Calz Independencia 303, Insurgentes Este", phone: "686 567 9254", hours: "8:00 AM – 11:00 PM" },
-  { name: "Gómez Morín", address: "Calz. Manuel Gómez Morín 392, Las Hadas", phone: "686 566 9595", hours: "8:00 AM – 11:00 PM" },
-  { name: "Lázaro Cárdenas", address: "#701 Esquina con Lago Chad, Jardines del Lago", phone: "686 557 2223", hours: "8:00 AM – 11:00 PM" },
+  {
+    name: "Independencia",
+    address: "Calz Independencia 303, Insurgentes Este, 21280 Mexicali, B.C.",
+    phones: ["(686) 567 9254", "(686) 567 3460"],
+    hours: "Lun–Jue: 11am–1am · Vie–Sáb: 11am–4am",
+    mapsQuery: "Calz+Independencia+303+Insurgentes+Este+Mexicali",
+  },
+  {
+    name: "Gómez Morín",
+    address: "Calz. Manuel Gómez Morín 392, Las Hadas, 21216 Mexicali, B.C.",
+    phones: ["(686) 566 9595"],
+    hours: "Lun–Dom: 11am–11pm",
+    mapsQuery: "Calz+Manuel+Gomez+Morin+392+Las+Hadas+Mexicali",
+  },
+  {
+    name: "Lázaro Cárdenas",
+    address: "Blvd. Lázaro Cárdenas #701 Esq. Lago Chad, Jardines del Lago, Mexicali, B.C.",
+    phones: ["(686) 557 2223"],
+    hours: "Lun–Dom: 11am–12am",
+    mapsQuery: "Blvd+Lazaro+Cardenas+701+Villafontana+Mexicali",
+  },
 ];
 
 const TIERS = [
@@ -64,7 +96,7 @@ const TIERS = [
 ];
 
 type CartItem = { id: string; name: string; price: number; qty: number };
-type Tab = "menu" | "puntos" | "sucursales";
+type Tab = "menu" | "puntos" | "sucursales" | "mas";
 
 /* ─────────────────── MAIN APP ─────────────────── */
 export default function HuarachonApp() {
@@ -78,12 +110,17 @@ export default function HuarachonApp() {
   const [cartBounce, setCartBounce] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [nameSet, setNameSet] = useState(false);
+  const [qrInput, setQrInput] = useState("");
+  const [qrMessage, setQrMessage] = useState("");
+  const [lastShareDate, setLastShareDate] = useState<string | null>(null);
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const tier = visits >= 25 ? TIERS[2] : visits >= 10 ? TIERS[1] : TIERS[0];
 
-  // Persist to localStorage
+  const today = new Date().toDateString();
+  const canShareToday = lastShareDate !== today;
+
   useEffect(() => {
     const saved = localStorage.getItem("huara-state");
     if (saved) {
@@ -92,15 +129,18 @@ export default function HuarachonApp() {
         if (s.points) setHuaraPoints(s.points);
         if (s.visits) setVisits(s.visits);
         if (s.name) { setGuestName(s.name); setNameSet(true); }
+        if (s.lastShare) setLastShareDate(s.lastShare);
       } catch { /* ignore */ }
     }
   }, []);
 
   useEffect(() => {
     if (nameSet) {
-      localStorage.setItem("huara-state", JSON.stringify({ points: huaraPoints, visits, name: guestName }));
+      localStorage.setItem("huara-state", JSON.stringify({
+        points: huaraPoints, visits, name: guestName, lastShare: lastShareDate,
+      }));
     }
-  }, [huaraPoints, visits, guestName, nameSet]);
+  }, [huaraPoints, visits, guestName, nameSet, lastShareDate]);
 
   const addToCart = useCallback((item: { id: string; name: string; price: number }) => {
     setCart((prev) => {
@@ -131,17 +171,55 @@ export default function HuarachonApp() {
     setTimeout(() => setOrderPlaced(false), 4000);
   };
 
+  const handleQrSubmit = () => {
+    const code = qrInput.trim().toUpperCase();
+    if (code.startsWith("HUARA-") && code.includes("-")) {
+      const parts = code.split("-");
+      const amount = parseFloat(parts[1]);
+      if (!isNaN(amount) && amount > 0) {
+        setHuaraPoints((p) => p + amount);
+        setVisits((v) => v + 1);
+        setQrMessage(`✅ ¡+$${amount.toFixed(0)} Huara-Puntos agregados!`);
+        setQrInput("");
+        setTimeout(() => setQrMessage(""), 3000);
+        return;
+      }
+    }
+    setQrMessage("❌ Código no válido. Pide tu código en caja.");
+    setTimeout(() => setQrMessage(""), 3000);
+  };
+
+  const handleShare = async () => {
+    if (!canShareToday) return;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "El Huarachón — Dale Gusto Al Paladar",
+          text: "🌮 Los mejores tacos de Mexicali desde 1976. ¡Únete a los #Huarafans!",
+          url: "https://huarachon-marketing.vercel.app",
+        });
+      } else {
+        await navigator.clipboard.writeText("🌮 Los mejores tacos de Mexicali desde 1976. ¡Únete a los #Huarafans! https://huarachon-marketing.vercel.app");
+      }
+      setHuaraPoints((p) => p + 20);
+      setLastShareDate(today);
+    } catch { /* user cancelled */ }
+  };
+
   /* ─── Welcome Gate ─── */
   if (!nameSet) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="min-h-screen flex items-center justify-center px-6 relative">
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-huara-red/20 blur-[120px] rounded-full animate-pulse-slow" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-huara-gold/10 blur-[100px] rounded-full animate-pulse-slow" style={{ animationDelay: "2s" }} />
         </div>
-        <div className="relative glass-strong rounded-3xl p-10 max-w-md w-full text-center space-y-6 animate-scale-in">
-          <div className="w-20 h-20 bg-huara-red rounded-2xl mx-auto flex items-center justify-center text-4xl font-black shadow-lg shadow-huara-red/30">H</div>
-          <h1 className="text-3xl font-black">¡Bienvenido!</h1>
+        <div className="relative glass-strong rounded-3xl p-10 max-w-md w-full text-center space-y-5 animate-scale-in">
+          <div className="w-24 h-24 mx-auto relative">
+            <Image src={LOGO} alt="El Huarachón" fill className="object-contain" sizes="96px" />
+          </div>
+          <Image src={PALADAR_HEADER} alt="Dale Gusto Al Paladar" width={320} height={102} className="mx-auto opacity-80" />
+          <p className="text-white/40 text-xs">Taquería en Mexicali desde 1976</p>
           <p className="text-white/50 text-sm">Pide en línea y gana Huara-Puntos con cada orden. Sin descargas.</p>
           <input
             type="text"
@@ -164,7 +242,6 @@ export default function HuarachonApp() {
 
   return (
     <div className="relative min-h-screen pb-20 selection:bg-huara-gold selection:text-black">
-      {/* Background orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-huara-red/15 blur-[120px] rounded-full animate-pulse-slow" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-huara-gold/8 blur-[100px] rounded-full animate-pulse-slow" style={{ animationDelay: "2s" }} />
@@ -174,9 +251,11 @@ export default function HuarachonApp() {
       <header className="sticky top-0 z-50 glass border-b-0 px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-huara-red rounded-xl flex items-center justify-center font-black text-lg shadow-lg shadow-huara-red/20">H</div>
+            <div className="w-9 h-9 relative shrink-0">
+              <Image src={LOGO} alt="El Huarachón" fill className="object-contain" sizes="36px" />
+            </div>
             <div>
-              <div className="font-bold text-sm leading-tight">El Huarachón</div>
+              <div className="font-bold text-sm leading-tight font-[var(--font-montserrat)]">El Huarachón</div>
               <div className="text-[10px] text-white/40">Hola, {guestName} {tier.icon}</div>
             </div>
           </div>
@@ -211,9 +290,9 @@ export default function HuarachonApp() {
 
       {/* ── Main Content ── */}
       <main className="relative z-10 max-w-3xl mx-auto px-4 pt-4 pb-4">
+        {/* ═══ MENU TAB ═══ */}
         {tab === "menu" && (
           <div className="animate-slide-up">
-            {/* Category Scroll */}
             <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none -mx-4 px-4">
               {MENU.categories.map((cat, i) => (
                 <button
@@ -230,7 +309,6 @@ export default function HuarachonApp() {
               ))}
             </div>
 
-            {/* Items Grid */}
             <div className="space-y-3 mt-2 stagger-children">
               {MENU.categories[activeCat].items.map((item) => {
                 const inCart = cart.find((c) => c.id === item.id);
@@ -271,6 +349,7 @@ export default function HuarachonApp() {
           </div>
         )}
 
+        {/* ═══ PUNTOS TAB ═══ */}
         {tab === "puntos" && (
           <div className="space-y-4 animate-slide-up">
             {/* Points Hero */}
@@ -286,16 +365,55 @@ export default function HuarachonApp() {
               </div>
             </div>
 
+            {/* QR Code Entry (web alternative to camera scan) */}
+            <div className="glass rounded-2xl p-5 space-y-3">
+              <div className="font-bold text-sm flex items-center gap-2">📱 Canjear Código QR</div>
+              <p className="text-xs text-white/40">Pide tu código en caja después de pagar y escríbelo aquí para ganar puntos.</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Ej: HUARA-50-MXL"
+                  value={qrInput}
+                  onChange={(e) => setQrInput(e.target.value)}
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-huara-gold/50 transition-colors placeholder:text-white/15 uppercase"
+                />
+                <button
+                  onClick={handleQrSubmit}
+                  disabled={!qrInput.trim()}
+                  className="px-4 bg-huara-red hover:bg-red-700 disabled:opacity-30 rounded-xl text-sm font-bold transition-all shrink-0"
+                >
+                  Canjear
+                </button>
+              </div>
+              {qrMessage && <div className="text-xs text-center animate-slide-up">{qrMessage}</div>}
+            </div>
+
+            {/* Share for Points */}
+            <div className="glass rounded-2xl p-5 space-y-3">
+              <div className="font-bold text-sm flex items-center gap-2">📣 Comparte y Gana</div>
+              <p className="text-xs text-white/40">Comparte El Huarachón en tus redes sociales y gana +$20 Huara-Puntos (1 vez al día).</p>
+              <button
+                onClick={handleShare}
+                disabled={!canShareToday}
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-all ${
+                  canShareToday
+                    ? "bg-huara-gold/20 hover:bg-huara-gold text-huara-gold hover:text-black hover:scale-[1.02] active:scale-95"
+                    : "bg-white/5 text-white/20 cursor-not-allowed"
+                }`}
+              >
+                {canShareToday ? "Compartir y Ganar +$20 pts 🎉" : "✅ Ya compartiste hoy. ¡Mañana ganas más!"}
+              </button>
+            </div>
+
             {/* Tier Progress */}
             <div className="glass rounded-2xl p-5 space-y-4">
               <div className="font-bold text-sm">Tu Progreso</div>
               <div className="flex items-center gap-3">
-                {TIERS.map((t, i) => (
+                {TIERS.map((t) => (
                   <div key={t.name} className="flex-1 text-center">
                     <div className={`text-2xl mb-1 ${visits >= t.min ? "" : "opacity-30 grayscale"}`}>{t.icon}</div>
                     <div className="text-[10px] text-white/40">{t.name}</div>
                     <div className="text-[9px] text-white/20">{t.min}+ visitas</div>
-                    {i < TIERS.length - 1 && <div className="hidden" />}
                   </div>
                 ))}
               </div>
@@ -308,31 +426,16 @@ export default function HuarachonApp() {
                   }}
                 />
               </div>
-              <div className="text-xs text-white/30 text-center">{visits} visitas · {Math.max(0, (visits >= 25 ? 0 : visits >= 10 ? 25 - visits : 10 - visits))} más para subir de nivel</div>
-            </div>
-
-            {/* How it works */}
-            <div className="glass rounded-2xl p-5 space-y-3">
-              <div className="font-bold text-sm">¿Cómo Funciona?</div>
-              {[
-                { icon: "🌮", text: "Haz tu pedido en línea o en la app" },
-                { icon: "💰", text: `Gana ${tier.rate} cashback en Huara-Puntos` },
-                { icon: "🎁", text: "Usa tus puntos como crédito en tu próximo pedido" },
-                { icon: "⬆️", text: "Sube de nivel con más visitas para mejor cashback" },
-              ].map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="text-lg shrink-0">{step.icon}</span>
-                  <span className="text-xs text-white/50">{step.text}</span>
-                </div>
-              ))}
+              <div className="text-xs text-white/30 text-center">{visits} visitas · {Math.max(0, (visits >= 25 ? 0 : visits >= 10 ? 25 - visits : 10 - visits))} más para subir</div>
             </div>
           </div>
         )}
 
+        {/* ═══ SUCURSALES TAB ═══ */}
         {tab === "sucursales" && (
           <div className="space-y-3 animate-slide-up stagger-children">
             <div className="text-center py-4">
-              <h2 className="text-xl font-bold">Nuestras Sucursales</h2>
+              <h2 className="text-xl font-bold font-[var(--font-montserrat)]">Sucursales</h2>
               <p className="text-xs text-white/40 mt-1">3 ubicaciones en Mexicali</p>
             </div>
             {BRANCHES.map((b) => (
@@ -344,27 +447,87 @@ export default function HuarachonApp() {
                     <div className="text-xs text-white/40 mt-0.5">{b.address}</div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="text-xs text-white/50 flex items-center gap-1.5">
+                  <span>🕐</span> {b.hours}
+                </div>
+                <div className="space-y-1.5">
+                  {b.phones.map((p) => (
+                    <a key={p} href={`tel:${p.replace(/[() ]/g, "")}`} className="flex items-center gap-2 text-xs text-white/60 hover:text-huara-gold transition-colors">
+                      <span>📞</span> {p}
+                    </a>
+                  ))}
+                </div>
+                <div className="flex gap-2 pt-1">
                   <a
-                    href={`tel:${b.phone.replace(/\s/g, "")}`}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl py-2.5 text-xs font-medium transition-colors"
-                  >
-                    <span>📞</span> {b.phone}
-                  </a>
-                  <a
-                    href={`https://maps.google.com/?q=El+Huarachon+${b.name}+Mexicali`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`tel:${b.phones[0].replace(/[() ]/g, "")}`}
                     className="flex-1 flex items-center justify-center gap-1.5 bg-huara-red/20 hover:bg-huara-red rounded-xl py-2.5 text-xs font-bold text-huara-red hover:text-white transition-all"
                   >
-                    <span>🗺️</span> Cómo Llegar
+                    📞 Pide y Recoge
                   </a>
-                </div>
-                <div className="text-[10px] text-white/20 flex items-center gap-1">
-                  <span>🕐</span> {b.hours}
+                  <a
+                    href={`https://maps.google.com/?q=${b.mapsQuery}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl py-2.5 text-xs font-medium transition-colors"
+                  >
+                    🗺️ Cómo Llegar
+                  </a>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ═══ MÁS TAB ═══ */}
+        {tab === "mas" && (
+          <div className="space-y-4 animate-slide-up">
+            {/* Nosotros */}
+            <div className="glass rounded-2xl p-5 space-y-3">
+              <div className="w-16 h-16 mx-auto relative">
+                <Image src={LOGO} alt="El Huarachón" fill className="object-contain" sizes="64px" />
+              </div>
+              <h2 className="text-center font-bold font-[var(--font-montserrat)]">Tradición en Mexicali</h2>
+              <p className="text-xs text-white/50 leading-relaxed text-center">
+                El Huarachón nace en 1976 en Mexicali, Baja California. Nos abrimos camino con persistencia, soluciones y ganas de crecer llevando la cultura mexicana en nuestros platillos. Después de 47 años seguimos diciéndole al cliente: &quot;Están en su casa, siéntanse cómodos&quot;.
+              </p>
+            </div>
+
+            {/* Photo Gallery */}
+            <div className="glass rounded-2xl p-5 space-y-3">
+              <div className="font-bold text-sm">#huarafans</div>
+              <div className="grid grid-cols-3 gap-1.5 rounded-xl overflow-hidden">
+                {FOOD_PHOTOS.map((src, i) => (
+                  <div key={i} className="aspect-square relative">
+                    <Image src={src} alt={`Huarachón foto ${i + 1}`} fill className="object-cover hover:scale-110 transition-transform duration-500" sizes="120px" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div className="glass rounded-2xl p-5 space-y-3">
+              <div className="font-bold text-sm">Síguenos</div>
+              <div className="flex gap-3">
+                <a href="https://www.facebook.com/AsaderoElHuarachon" target="_blank" rel="noopener noreferrer"
+                   className="flex-1 flex items-center justify-center gap-2 bg-[#1877F2]/20 hover:bg-[#1877F2] rounded-xl py-3 text-sm font-bold transition-all hover:text-white text-[#1877F2]">
+                  📘 Facebook
+                </a>
+                <a href="https://www.instagram.com/huarachonmxli/" target="_blank" rel="noopener noreferrer"
+                   className="flex-1 flex items-center justify-center gap-2 bg-[#E4405F]/20 hover:bg-[#E4405F] rounded-xl py-3 text-sm font-bold transition-all hover:text-white text-[#E4405F]">
+                  📸 Instagram
+                </a>
+              </div>
+            </div>
+
+            {/* App Download CTA */}
+            <div className="glass rounded-2xl p-5 text-center space-y-2">
+              <div className="text-2xl">📱</div>
+              <div className="font-bold text-sm">¿Quieres la experiencia completa?</div>
+              <p className="text-xs text-white/40">Descarga la app para widgets, escaneo QR con cámara, notificaciones y más.</p>
+              <button className="bg-huara-gold/20 hover:bg-huara-gold text-huara-gold hover:text-black px-6 py-2.5 rounded-xl text-xs font-bold transition-all hover:scale-105 mt-2">
+                Próximamente en App Store y Google Play
+              </button>
+            </div>
           </div>
         )}
       </main>
@@ -376,6 +539,7 @@ export default function HuarachonApp() {
             { key: "menu" as Tab, icon: "🌮", label: "Menú" },
             { key: "puntos" as Tab, icon: "⭐", label: "Puntos" },
             { key: "sucursales" as Tab, icon: "📍", label: "Sucursales" },
+            { key: "mas" as Tab, icon: "☰", label: "Más" },
           ]).map((t) => (
             <button
               key={t.key}
@@ -402,12 +566,10 @@ export default function HuarachonApp() {
                 <button onClick={() => setCartOpen(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors text-sm">✕</button>
               </div>
             </div>
-
             {cart.length === 0 ? (
               <div className="p-10 text-center">
                 <div className="text-4xl mb-3">🌮</div>
                 <div className="text-white/30 text-sm">Tu carrito está vacío</div>
-                <div className="text-white/15 text-xs mt-1">Agrega algo del menú para empezar</div>
               </div>
             ) : (
               <>
@@ -427,7 +589,6 @@ export default function HuarachonApp() {
                     </div>
                   ))}
                 </div>
-
                 <div className="p-5 border-t border-white/5 space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-white/50">Subtotal</span>

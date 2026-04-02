@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'taqueriaelhuarachon.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
