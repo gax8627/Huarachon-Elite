@@ -176,7 +176,7 @@ export default function App() {
   /* ─── Render ─── */
   return (
     <div
-      className="min-h-screen max-w-sm mx-auto relative overflow-hidden"
+      className="min-h-screen max-w-sm mx-auto relative"
       style={{ background: "#121212" }}
     >
       <AnimatePresence mode="wait">
