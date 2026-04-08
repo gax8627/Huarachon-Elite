@@ -80,7 +80,7 @@ export default function QrScanner({ onScanSuccess, onClose }: QrScannerProps) {
           {/* Scanning Overlay (Aesthetic) - Hidden if error */}
           {!error && (
             <div className="absolute inset-0 pointer-events-none border-2 border-transparent">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] border-2 border-huara-gold/50 rounded-2xl">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(250px,80vw)] h-[min(250px,80vw)] border-2 border-huara-gold/50 rounded-2xl">
                   <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-huara-gold rounded-tl-xl"></div>
                   <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-huara-gold rounded-tr-xl"></div>
                   <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-huara-gold rounded-bl-xl"></div>

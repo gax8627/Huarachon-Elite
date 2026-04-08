@@ -269,7 +269,7 @@ export default function App() {
                   <button
                     key={id}
                     onClick={() => setTab(id)}
-                    className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all"
+                    className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all"
                     style={{ minWidth: "52px" }}
                   >
                     <span

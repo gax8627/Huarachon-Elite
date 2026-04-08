@@ -209,12 +209,12 @@ export default function MenuPage({ user, branches, onPlaceOrder }: Props) {
               style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
               {item.image ? (
-                <div className="h-28 overflow-hidden">
+                <div className="h-28 overflow-hidden aspect-square">
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <div
-                  className="h-28 flex items-center justify-center text-4xl"
+                  className="h-28 aspect-square flex items-center justify-center text-4xl"
                   style={{ background: "rgba(227,27,35,0.08)" }}
                 >
                   {getPlaceholder(item.category)}
@@ -227,7 +227,7 @@ export default function MenuPage({ user, branches, onPlaceOrder }: Props) {
                   <span className="font-bold text-sm" style={{ color: "#FFD700" }}>${item.price}</span>
                   <button
                     onClick={() => addToCart(item)}
-                    className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-white text-lg transition-transform active:scale-90"
+                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-xl transition-transform active:scale-90"
                     style={{ background: "#E31B23" }}
                   >
                     +
@@ -502,13 +502,13 @@ export default function MenuPage({ user, branches, onPlaceOrder }: Props) {
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => updateQty(item.id, -1)}
-                                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm"
+                                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm"
                                   style={{ background: "rgba(255,255,255,0.1)" }}
                                 >–</button>
                                 <span className="text-white text-sm w-4 text-center">{item.quantity}</span>
                                 <button
                                   onClick={() => updateQty(item.id, 1)}
-                                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm"
+                                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm"
                                   style={{ background: "#E31B23" }}
                                 >+</button>
                               </div>

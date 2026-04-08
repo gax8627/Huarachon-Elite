@@ -147,12 +147,12 @@ export default function RewardsPage({ user, onRedeem }: Props) {
               }}
             >
               {item.image ? (
-                <div className="h-24 overflow-hidden">
+                <div className="h-24 overflow-hidden aspect-square">
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <div
-                  className="h-24 flex items-center justify-center text-3xl"
+                  className="h-24 aspect-square flex items-center justify-center text-3xl"
                   style={{ background: "rgba(255,215,0,0.06)" }}
                 >
                   🌮

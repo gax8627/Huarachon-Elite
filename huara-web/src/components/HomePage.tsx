@@ -278,7 +278,7 @@ export default function HomePage({
               className="flex-shrink-0 w-48 rounded-2xl overflow-hidden relative"
               style={{ border: "1px solid rgba(255,255,255,0.1)" }}
             >
-              <div className="h-24 overflow-hidden">
+              <div className="h-24 overflow-hidden aspect-video">
                 <img src={deal.image} alt={deal.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               </div>
