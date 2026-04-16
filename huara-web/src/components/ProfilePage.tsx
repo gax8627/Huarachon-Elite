@@ -27,6 +27,46 @@ export default function ProfilePage({ user, orders, onUpdateUser, onLogout }: Pr
   const [starPick, setStarPick] = useState(0);
   const [feedback, setFeedback] = useState("");
 
+  // Admin panel
+  const [versionTaps, setVersionTaps] = useState(0);
+  const [showPinPrompt, setShowPinPrompt] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [adminPtsInput, setAdminPtsInput] = useState("50");
+  const [adminToast, setAdminToast] = useState("");
+
+  const handleVersionTap = () => {
+    const next = versionTaps + 1;
+    setVersionTaps(next);
+    if (next >= 5) { setVersionTaps(0); setShowPinPrompt(true); setPin(""); setPinError(false); }
+  };
+
+  const handlePinSubmit = () => {
+    if (pin === "1985") { setShowPinPrompt(false); setShowAdmin(true); setPinError(false); }
+    else { setPinError(true); setPin(""); }
+  };
+
+  const handleAdminAddPoints = () => {
+    const pts = parseInt(adminPtsInput);
+    if (isNaN(pts) || pts <= 0) return;
+    onUpdateUser({ balance: user.balance + pts });
+    setAdminToast(`+${pts} pts acreditados ✓`);
+    setTimeout(() => setAdminToast(""), 2500);
+  };
+
+  const handleAdminSimVisit = () => {
+    onUpdateUser({ visitCount: user.visitCount + 1 });
+    setAdminToast("Visita simulada ✓");
+    setTimeout(() => setAdminToast(""), 2500);
+  };
+
+  const handleAdminResetUser = () => {
+    onUpdateUser({ balance: 0, visitCount: 0, tier: HuaraTier.BRONCE });
+    setAdminToast("Usuario reseteado ✓");
+    setTimeout(() => setAdminToast(""), 2500);
+  };
+
   const tierColor = TIER_COLORS[user.tier];
   const savings = (user.balance * 0.1).toFixed(2);
 
@@ -53,7 +93,9 @@ export default function ProfilePage({ user, orders, onUpdateUser, onLogout }: Pr
         <h1 className="text-white font-black text-xl" style={{ fontFamily: "Montserrat, sans-serif" }}>
           Mi Perfil
         </h1>
-        <span className="text-white/30 text-xs">v2.4.0 Elite</span>
+        <button onClick={handleVersionTap} className="text-white/30 text-xs select-none">
+          v2.4.0 Elite {versionTaps > 0 ? `(${5 - versionTaps})` : ""}
+        </button>
       </div>
 
       {/* Avatar + user info */}
@@ -288,6 +330,147 @@ export default function ProfilePage({ user, orders, onUpdateUser, onLogout }: Pr
                   Enviar
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Admin: PIN prompt ─── */}
+      <AnimatePresence>
+        {showPinPrompt && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            style={{ background: "rgba(0,0,0,0.9)" }}
+          >
+            <motion.div
+              initial={{ scale: 0.85 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.85 }}
+              className="rounded-3xl p-6 w-full max-w-xs flex flex-col items-center gap-4"
+              style={{ background: "#111", border: "1px solid rgba(227,27,35,0.4)" }}
+            >
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "rgba(227,27,35,0.15)" }}>🔐</div>
+              <p className="text-white font-bold text-lg">Panel de Admin</p>
+              <p className="text-white/40 text-xs text-center">Ingresa el PIN de acceso</p>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                autoFocus
+                value={pin}
+                onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setPinError(false); }}
+                onKeyDown={(e) => e.key === "Enter" && handlePinSubmit()}
+                placeholder="••••"
+                className="w-full text-center py-3 rounded-xl text-white text-2xl tracking-[0.5em] outline-none"
+                style={{ background: "rgba(255,255,255,0.07)", border: `1px solid ${pinError ? "#E31B23" : "rgba(255,255,255,0.1)"}` }}
+              />
+              {pinError && <p className="text-xs" style={{ color: "#E31B23" }}>PIN incorrecto</p>}
+              <div className="flex gap-3 w-full">
+                <button onClick={() => setShowPinPrompt(false)} className="flex-1 py-3 rounded-xl text-white/50 text-sm" style={{ background: "rgba(255,255,255,0.06)" }}>Cancelar</button>
+                <button onClick={handlePinSubmit} disabled={pin.length < 4} className="flex-1 py-3 rounded-xl font-bold text-white text-sm disabled:opacity-40" style={{ background: "#E31B23" }}>Entrar</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Admin: Dashboard ─── */}
+      <AnimatePresence>
+        {showAdmin && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ background: "rgba(0,0,0,0.9)" }}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              className="w-full max-w-sm rounded-t-3xl p-5 pb-10 flex flex-col gap-4 max-h-[85vh] overflow-y-auto"
+              style={{ background: "#0d0d0d", border: "1px solid rgba(227,27,35,0.3)" }}
+            >
+              <div className="w-10 h-1 rounded-full bg-white/20 mx-auto" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🛠️</span>
+                  <p className="text-white font-bold">Panel Admin — Huarachón</p>
+                </div>
+                <button onClick={() => setShowAdmin(false)} className="text-white/40 text-sm">✕</button>
+              </div>
+
+              {adminToast && (
+                <div className="py-2 px-4 rounded-xl text-center text-sm font-semibold text-black" style={{ background: "#FFD700" }}>
+                  {adminToast}
+                </div>
+              )}
+
+              {/* User info */}
+              <div className="rounded-xl p-3 flex flex-col gap-1 text-xs" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <p className="text-white/60 uppercase tracking-wider font-semibold mb-1">Usuario activo</p>
+                <div className="flex justify-between text-white/70"><span>Nombre</span><span className="font-bold text-white">{user.name}</span></div>
+                <div className="flex justify-between text-white/70"><span>Email</span><span className="text-white/50">{user.email}</span></div>
+                <div className="flex justify-between text-white/70"><span>Tier</span><span className="font-bold" style={{ color: TIER_COLORS[user.tier] }}>{user.tier.toUpperCase()}</span></div>
+                <div className="flex justify-between text-white/70"><span>Puntos</span><span className="font-bold text-white">{user.balance.toFixed(0)}</span></div>
+                <div className="flex justify-between text-white/70"><span>Visitas</span><span className="font-bold text-white">{user.visitCount}</span></div>
+                <div className="flex justify-between text-white/70"><span>Pedidos</span><span className="font-bold text-white">{orders.length}</span></div>
+              </div>
+
+              {/* Add points */}
+              <div className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "rgba(255,215,0,0.06)", border: "1px solid rgba(255,215,0,0.2)" }}>
+                <p className="text-white/60 uppercase tracking-wider font-semibold text-xs mb-1">Acreditar Huara-Puntos</p>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={adminPtsInput}
+                    onChange={(e) => setAdminPtsInput(e.target.value)}
+                    className="flex-1 py-2 px-3 rounded-xl text-white text-sm outline-none text-center"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}
+                    min="1"
+                  />
+                  <button
+                    onClick={handleAdminAddPoints}
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-black"
+                    style={{ background: "#FFD700" }}
+                  >
+                    + Puntos
+                  </button>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {[20, 50, 100, 500].map((n) => (
+                    <button key={n} onClick={() => setAdminPtsInput(String(n))} className="px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: "rgba(255,215,0,0.15)", color: "#FFD700" }}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleAdminSimVisit}
+                  className="w-full py-3 rounded-xl text-sm font-bold text-white"
+                  style={{ background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", color: "#22c55e" }}
+                >
+                  🏃 Simular Visita (+1)
+                </button>
+                <button
+                  onClick={handleAdminResetUser}
+                  className="w-full py-3 rounded-xl text-sm font-bold"
+                  style={{ background: "rgba(227,27,35,0.1)", border: "1px solid rgba(227,27,35,0.3)", color: "#E31B23" }}
+                >
+                  ⚠️ Resetear Usuario (balance + visitas)
+                </button>
+              </div>
+
+              <p className="text-white/20 text-center text-[10px] mt-2">
+                HUARACHÓN ADMIN · SOLO USO INTERNO · MEXICALI B.C.
+              </p>
             </motion.div>
           </motion.div>
         )}

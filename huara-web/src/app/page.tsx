@@ -147,6 +147,26 @@ export default function App() {
     setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: OrderStatus.COMPLETED } : o));
   }, []);
 
+  /* ─── QR scan → earn points ─── */
+  const handleScanQr = useCallback((decodedText: string) => {
+    if (!user) return;
+    let points = 0;
+    // Format 1: HUARA-20-MXL (simulated or real ticket)
+    const direct = decodedText.match(/HUARA[-:]?(\d+)[-:]?MXL/i);
+    if (direct) {
+      points = parseInt(direct[1]);
+    } else {
+      // Format 2: HUARA:ADD_20:... (manual entry)
+      const manual = decodedText.match(/ADD[_-]?(\d+)/i);
+      if (manual) points = parseInt(manual[1]);
+      else points = 30; // default bonus for unknown valid code
+    }
+    if (points > 0) {
+      const updated = { ...user, balance: user.balance + points };
+      saveUser(updated);
+    }
+  }, [user, saveUser]);
+
   /* ─── Rewards ─── */
   const handleRedeem = useCallback((item: RewardItem) => {
     if (!user) return;
@@ -217,6 +237,7 @@ export default function App() {
                       onNavigate={(v) => setTab(v as Tab)}
                       onMarkOrderComplete={handleMarkComplete}
                       onShareForPoints={handleShare}
+                      onScanQr={handleScanQr}
                       onLogout={handleLogout}
                     />
                   </motion.div>

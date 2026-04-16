@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { UserProfile, Order, Deal, AppView } from "../types";
 import { HuaraTier, OrderStatus, PickupMethod } from "../types";
+import QrScanner from "./QrScanner";
 
 const LOGO =
   "/logo.webp";
@@ -78,6 +79,7 @@ interface Props {
   onNavigate: (view: AppView) => void;
   onMarkOrderComplete: (orderId: string) => void;
   onShareForPoints: () => void;
+  onScanQr: (decodedText: string) => void;
   onLogout: () => void;
 }
 
@@ -88,9 +90,24 @@ export default function HomePage({
   onNavigate,
   onMarkOrderComplete,
   onShareForPoints,
+  onScanQr,
   onLogout,
 }: Props) {
   const [showQr, setShowQr] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scanToast, setScanToast] = useState<string | null>(null);
+
+  const handleScanSuccess = (decodedText: string) => {
+    setShowScanner(false);
+    // Compute preview points for toast
+    let pts = 0;
+    const direct = decodedText.match(/HUARA[-:]?(\d+)[-:]?MXL/i);
+    if (direct) pts = parseInt(direct[1]);
+    else { const m = decodedText.match(/ADD[_-]?(\d+)/i); pts = m ? parseInt(m[1]) : 30; }
+    onScanQr(decodedText);
+    setScanToast(`+${pts} Huara-Puntos acreditados 🎉`);
+    setTimeout(() => setScanToast(null), 3500);
+  };
   const tierColor = TIER_COLORS[user.tier];
   const tierNext = TIER_NEXT[user.tier];
   const tierProgress = user.tier === HuaraTier.ORO ? 100 : Math.min((user.visitCount / tierNext) * 100, 100);
@@ -244,10 +261,11 @@ export default function HomePage({
       </motion.div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-2">
         {[
           { icon: "🌮", label: "Pedir", action: () => onNavigate("menu") },
           { icon: "⭐", label: "Canjear", action: () => onNavigate("rewards") },
+          { icon: "📷", label: "Escanear", action: () => setShowScanner(true) },
           { icon: "📍", label: "Sucursales", action: () => onNavigate("locations") },
         ].map((btn) => (
           <button
@@ -377,6 +395,29 @@ export default function HomePage({
             ))}
           </div>
         </div>
+      )}
+
+      {/* Scan toast */}
+      <AnimatePresence>
+        {scanToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 left-1/2 z-[60] -translate-x-1/2 px-5 py-3 rounded-2xl font-semibold text-sm text-black whitespace-nowrap"
+            style={{ background: "#FFD700", boxShadow: "0 4px 20px rgba(255,215,0,0.5)" }}
+          >
+            {scanToast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* QR Scanner modal */}
+      {showScanner && (
+        <QrScanner
+          onScanSuccess={handleScanSuccess}
+          onClose={() => setShowScanner(false)}
+        />
       )}
 
       {/* QR Modal */}
