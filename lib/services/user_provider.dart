@@ -2,26 +2,50 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../services/sierra_api_service.dart';
 import '../services/security_service.dart';
+import '../services/supabase_service.dart';
 
 enum HuaraTier { bronce, plata, oro }
 
 class UserProvider extends ChangeNotifier {
   final SierraApiService _sierra = SierraApiService();
+  final SupabaseService _supabase = SupabaseService();
   
   double _balance = 128.50;
   String _name = 'Huarafan';
   DateTime? _birthday;
-  // Social and Points State
   DateTime? _lastSocialShareDate;
   String? lastPointsMessage;
   bool _hasSeenOnboarding = false;
   
-  // Favorite Order
   String? _favoriteItemId;
   int _favoriteQty = 1;
-
-  // Digital Orders History
   final List<Map<String, dynamic>> _digitalOrders = [];
+
+  // Preferences
+  String? favoriteMeat;
+  String? favoriteTortilla;
+  String? favoriteSpice;
+
+  UserProvider() {
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    final profile = await _supabase.getProfile();
+    if (profile != null) {
+      _name = profile['full_name'] ?? _name;
+      favoriteMeat = profile['favorite_meat'];
+      // Load other fields as needed
+      notifyListeners();
+    }
+    
+    final history = await _supabase.fetchOrderHistory();
+    _digitalOrders.clear();
+    for (var item in history) {
+      _digitalOrders.add(item as Map<String, dynamic>);
+    }
+    notifyListeners();
+  }
 
   bool get hasSeenOnboarding => _hasSeenOnboarding;
   String? get favoriteItemId => _favoriteItemId;
@@ -39,7 +63,6 @@ class UserProvider extends ChangeNotifier {
 
   void sharePostForPoints() {
     if (!canClaimSocialReward) return;
-    
     _lastSocialShareDate = DateTime.now();
     addPoints(20); 
     lastPointsMessage = '¡Sabor compartido! ✨ +\$20 Huara-Puntos';
@@ -51,12 +74,15 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addOrder(Map<String, dynamic> order) {
-    _digitalOrders.insert(0, {
-      ...order,
-      'timestamp': DateTime.now().toIso8601String(),
-    });
-    notifyListeners();
+  Future<void> addOrder(Map<String, dynamic> order) async {
+    final success = await _supabase.saveOrder(order);
+    if (success) {
+      _digitalOrders.insert(0, {
+        ...order,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+      notifyListeners();
+    }
   }
 
   void setFavoriteOrder(String itemId, int qty) {
@@ -66,21 +92,16 @@ class UserProvider extends ChangeNotifier {
   }
 
   String get favoriteOrderQrString {
-    if (_favoriteItemId == null) return "EL_HUARACHON_USER_001";
-    return "FAV_ORDER:$_favoriteItemId:$_favoriteQty:USER_001";
+    final userId = _supabase.currentUser?.id ?? "001";
+    if (_favoriteItemId == null) return "EL_HUARACHON_USER_$userId";
+    return "FAV_ORDER:$_favoriteItemId:$_favoriteQty:$userId";
   }
-
-  // Preferences
-  String? favoriteMeat;
-  String? favoriteTortilla;
-  String? favoriteSpice;
 
   void setBirthday(DateTime date) {
     _birthday = date;
     notifyListeners();
   }
 
-  // Engagement & Growth
   List<DateTime> visitHistory = [];
   String referralCode = 'HUARA-${(1000 + (DateTime.now().millisecond % 8999)).toString()}';
   List<String> earnedBadges = ['Novato'];
@@ -130,8 +151,6 @@ class UserProvider extends ChangeNotifier {
     if (SecurityService.verifySignedQR(code)) {
       final parts = code.split(':');
       final data = parts[1];
-      
-      // Simple parsing of balance increase: 'ADD_50'
       if (data.startsWith('ADD_')) {
         final amountString = data.substring(4);
         final amount = double.tryParse(amountString) ?? 0.0;
@@ -141,4 +160,5 @@ class UserProvider extends ChangeNotifier {
     }
     return false;
   }
+  void addPoints(double amount) => addBalance(amount);
 }

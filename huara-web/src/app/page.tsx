@@ -14,6 +14,9 @@ import MenuPage from "../components/MenuPage";
 import RewardsPage from "../components/RewardsPage";
 import LocationsPage from "../components/LocationsPage";
 import ProfilePage from "../components/ProfilePage";
+import { supabase } from "../lib/supabase";
+import { getHuaraResponse } from "../lib/gemini";
+import ChatBot from "../components/ChatBot";
 
 /* ─── Branches (real Mexicali locations) ─── */
 const BRANCHES: Branch[] = [
@@ -62,76 +65,140 @@ const TABS = [
 type Tab = typeof TABS[number]["id"];
 type AppScreen = "splash" | "onboarding" | "login" | "app";
 
-const LS_USER = "huara_user_v2";
-const LS_ORDERS = "huara_orders_v2";
-
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>("splash");
   const [tab, setTab] = useState<Tab>("home");
   const [user, setUser] = useState<UserProfile | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+  const [showChat, setShowChat] = useState(false);
 
-  /* ─── Persist ─── */
+  /* ─── Supabase Unification ─── */
   useEffect(() => {
-    const u = localStorage.getItem(LS_USER);
-    const o = localStorage.getItem(LS_ORDERS);
-    if (u) setUser(JSON.parse(u));
-    if (o) setOrders(JSON.parse(o));
+    // 1. Handle Auth State
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        syncProfile(session.user.id, session.user.email!);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        syncProfile(session.user.id, session.user.email!);
+      } else {
+        setUser(null);
+        setScreen("login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const saveUser = useCallback((u: UserProfile) => {
-    setUser(u);
-    localStorage.setItem(LS_USER, JSON.stringify(u));
-  }, []);
+  const syncProfile = async (id: string, email: string) => {
+    // Pull from Supabase (Unifies with Mobile App)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-  const saveOrders = useCallback((o: Order[]) => {
-    setOrders(o);
-    localStorage.setItem(LS_ORDERS, JSON.stringify(o));
-  }, []);
-
-  /* ─── Auth flow ─── */
-  const handleSplashDone = () => {
-    const u = localStorage.getItem(LS_USER);
-    if (u) {
-      const parsed = JSON.parse(u) as UserProfile;
-      setUser(parsed);
+    if (profile) {
+      setUser({
+        name: profile.full_name || "Huarafan",
+        email: email,
+        tier: profile.tier || HuaraTier.BRONCE,
+        balance: profile.balance || 128.5,
+        visitCount: profile.visit_count || 0,
+        referralCode: profile.referral_code || "HUARA-WEB",
+        favoriteIds: [],
+        hasSeenOnboarding: true,
+        notifOffers: true,
+        notifOrders: true,
+      });
       setScreen("app");
     } else {
-      setScreen("onboarding");
+      // Create profile if missing
+      const newProfile = {
+        id,
+        full_name: email.split('@')[0],
+        balance: 100, // Welcome points
+        tier: HuaraTier.BRONCE,
+      };
+      await supabase.from('profiles').insert(newProfile);
+      setUser({
+        name: email.split('@')[0],
+        email,
+        tier: HuaraTier.BRONCE,
+        balance: 100,
+        visitCount: 0,
+        referralCode: "HUARA-NEW",
+        favoriteIds: [],
+        hasSeenOnboarding: true,
+        notifOffers: true,
+        notifOrders: true,
+      });
+      setScreen("app");
     }
+
+    // Fetch synced orders
+    const { data: history } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', id)
+      .order('created_at', { ascending: false });
+    
+    if (history) setOrders(history as any);
+  };
+
+  const handleSplashDone = () => {
+    if (user) setScreen("app");
+    else setScreen("onboarding");
   };
 
   const handleOnboardingDone = () => setScreen("login");
 
   const handleLogin = (u: UserProfile) => {
-    saveUser(u);
-    setScreen("app");
+    // Handled by Supabase onAuthStateChange
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem(LS_USER);
-    setUser(null);
-    setTab("home");
-    setScreen("login");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   /* ─── Order flow (simulates POS pipeline) ─── */
-  const handlePlaceOrder = useCallback((order: Order) => {
+  const handlePlaceOrder = useCallback(async (order: Order) => {
     setActiveOrder(order);
-    const updated = [order, ...orders].slice(0, 20);
-    saveOrders(updated);
+    
+    // Unify: Save to Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      await supabase.from('orders').insert({
+        user_id: session.user.id,
+        branch: order.branch,
+        total: order.total,
+        items: order.items,
+        status: order.status,
+      });
 
-    // Update user points + visits
-    if (user) {
-      const newVisits = user.visitCount + 1;
-      const newBalance = user.balance + order.pointsEarned;
-      const newTier = calcTier(newVisits);
-      const updatedUser = { ...user, visitCount: newVisits, balance: newBalance, tier: newTier };
-      saveUser(updatedUser);
+      // Update user points + visits in Supabase
+      if (user) {
+        const newVisits = user.visitCount + 1;
+        const newBalance = user.balance + order.pointsEarned;
+        const newTier = calcTier(newVisits);
+        
+        await supabase.from('profiles').update({
+          balance: newBalance,
+          visit_count: newVisits,
+          tier: newTier,
+        }).eq('id', session.user.id);
+
+        setUser({ ...user, visitCount: newVisits, balance: newBalance, tier: newTier });
+      }
     }
 
-    // Simulate order status progression
+    setOrders((prev) => [order, ...prev.slice(0, 19)]);
+
+    // Simulate order status progression logic...
     const advance = (status: OrderStatus, delay: number) => {
       setTimeout(() => {
         setActiveOrder((prev) => prev ? { ...prev, status } : null);
@@ -140,7 +207,7 @@ export default function App() {
     };
     advance(OrderStatus.PREPARING, 8000);
     advance(OrderStatus.READY, 20000);
-  }, [orders, user, saveOrders, saveUser]);
+  }, [user]);
 
   const handleMarkComplete = useCallback((orderId: string) => {
     setActiveOrder(null);
@@ -148,50 +215,66 @@ export default function App() {
   }, []);
 
   /* ─── QR scan → earn points ─── */
-  const handleScanQr = useCallback((decodedText: string) => {
+  const handleScanQr = useCallback(async (decodedText: string) => {
     if (!user) return;
     let points = 0;
-    // Format 1: HUARA-20-MXL (simulated or real ticket)
-    const direct = decodedText.match(/HUARA[-:]?(\d+)[-:]?MXL/i);
-    if (direct) {
-      points = parseInt(direct[1]);
-    } else {
-      // Format 2: HUARA:ADD_20:... (manual entry)
-      const manual = decodedText.match(/ADD[_-]?(\d+)/i);
-      if (manual) points = parseInt(manual[1]);
-      else points = 30; // default bonus for unknown valid code
-    }
+    const manual = decodedText.match(/ADD[_-]?(\d+)/i);
+    if (manual) points = parseInt(manual[1]);
+    else points = 30;
+
     if (points > 0) {
-      const updated = { ...user, balance: user.balance + points };
-      saveUser(updated);
+      const newBalance = user.balance + points;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
+      }
+      setUser({ ...user, balance: newBalance });
     }
-  }, [user, saveUser]);
+  }, [user]);
 
   /* ─── Rewards ─── */
-  const handleRedeem = useCallback((item: RewardItem) => {
+  const handleRedeem = useCallback(async (item: RewardItem) => {
     if (!user) return;
-    const updated = { ...user, balance: user.balance - item.pointsCost };
-    saveUser(updated);
-  }, [user, saveUser]);
+    const newBalance = user.balance - item.pointsCost;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
+    }
+    setUser({ ...user, balance: newBalance });
+  }, [user]);
 
   /* ─── Social share ─── */
-  const handleShare = useCallback(() => {
+  const handleShare = useCallback(async () => {
     if (!user) return;
     const today = new Date().toDateString();
     if (user.lastShareDate === today) return;
-    const updated = { ...user, balance: user.balance + 20, lastShareDate: today };
-    saveUser(updated);
+    
+    const newBalance = user.balance + 20;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      await supabase.from('profiles').update({ 
+        balance: newBalance,
+        last_share_date: today 
+      }).eq('id', session.user.id);
+    }
+    setUser({ ...user, balance: newBalance, lastShareDate: today });
     if (navigator.share) {
       navigator.share({ title: "El Huarachón", text: "¡El mejor taquero de Mexicali! 🌮", url: "https://taqueriaelhuarachon.com" });
     }
-  }, [user, saveUser]);
+  }, [user]);
 
   /* ─── Update user fields ─── */
-  const handleUpdateUser = useCallback((patch: Partial<UserProfile>) => {
+  const handleUpdateUser = useCallback(async (patch: Partial<UserProfile>) => {
     if (!user) return;
     const updated = { ...user, ...patch };
-    saveUser(updated);
-  }, [user, saveUser]);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      await supabase.from('profiles').update({
+        full_name: updated.name,
+      }).eq('id', session.user.id);
+    }
+    setUser(updated);
+  }, [user]);
 
   /* ─── Render ─── */
   return (
@@ -319,6 +402,23 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Floating Huara-Concierge Button (always visible in-app) ── */}
+      {screen === "app" && (
+        <>
+          <button
+            onClick={() => setShowChat(true)}
+            className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-xl text-2xl transition-transform active:scale-90"
+            style={{ background: "linear-gradient(135deg, #E31B23, #B01217)" }}
+            title="Huara-Concierge"
+          >
+            🌮
+          </button>
+          <AnimatePresence>
+            {showChat && <ChatBot onClose={() => setShowChat(false)} />}
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

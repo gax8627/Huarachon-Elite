@@ -9,6 +9,7 @@ import 'qr_scanner_page.dart';
 import 'preferences_survey_page.dart';
 import 'challenges_page.dart';
 import 'referral_page.dart';
+import 'support_page.dart';
 import '../widgets/lto_banner_widget.dart';
 import '../widgets/pulse_animation.dart';
 
@@ -241,6 +242,15 @@ class HomePage extends StatelessWidget {
                               );
                             }
                           },
+                        ),
+                        _buildEngagementTile(
+                          context,
+                          'Pregunta a Huara',
+                          'Tu concierge inteligente',
+                          Icons.chat_bubble_rounded,
+                          AppColors.primaryYellow,
+                          'hero-support',
+                          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportPage())),
                         ),
                       ],
                     ),
