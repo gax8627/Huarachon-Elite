@@ -13,8 +13,8 @@ void main() async {
   
   // Initialize Supabase
   await Supabase.initialize(
-    url: 'https://dtbsraapjikprvarchyx.supabase.co', // Retrieved from browser state
-    anonKey: 'YOUR_SUPABASE_ANON_KEY', // User to provide or retrieve from .env
+    url: 'https://cnuvfblsilouuahitpij.supabase.co',
+    anonKey: 'sb_publishable_NO3srLICVoXJjzk3kKJFQA_h5YSA8ii',
   );
   
   await NotificationService().init();
