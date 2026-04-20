@@ -1,7 +1,0 @@
-{
-  "buildCommand": "cd huara-web && npm install && npm run build",
-  "outputDirectory": "huara-web/.next",
-  "installCommand": "cd huara-web && npm install",
-  "framework": "nextjs",
-  "rootDirectory": "huara-web"
-}
