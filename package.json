@@ -1,0 +1,7 @@
+{
+  "name": "huarachon-root",
+  "private": true,
+  "scripts": {
+    "vercel-build": "cd huara-web && npm install && npm run build"
+  }
+}
