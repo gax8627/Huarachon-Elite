@@ -79,13 +79,21 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         syncProfile(session.user.id, session.user.email!);
+        // Clear hash from URL (OAuth/Magic Link fragment)
+        if (window.location.hash) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
         syncProfile(session.user.id, session.user.email!);
-      } else {
+        // Clear hash from URL
+        if (window.location.hash) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+      } else if (!session) {
         setUser(null);
         setScreen("login");
       }

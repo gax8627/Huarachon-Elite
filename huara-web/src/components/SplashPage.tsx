@@ -11,14 +11,14 @@ export default function SplashPage({ onDone }: Props) {
   const [phase, setPhase] = useState<"logo" | "text" | "bar">("logo");
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("text"), 600);
-    const t2 = setTimeout(() => setPhase("bar"), 1100);
+    const t1 = setTimeout(() => setPhase("text"), 1200); // Slower
+    const t2 = setTimeout(() => setPhase("bar"), 2200);  // Slower
     const interval = setInterval(() => {
       setProgress((p) => {
-        if (p >= 100) { clearInterval(interval); setTimeout(onDone, 400); return 100; }
-        return p + 2.2;
+        if (p >= 100) { clearInterval(interval); setTimeout(onDone, 800); return 100; }
+        return p + 1.1; // Slower (half speed)
       });
-    }, 80);
+    }, 100); // Slightly more frequent but smaller increments
     return () => { clearTimeout(t1); clearTimeout(t2); clearInterval(interval); };
   }, [onDone]);
 
