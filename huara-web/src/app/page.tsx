@@ -79,21 +79,22 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         syncProfile(session.user.id, session.user.email!);
-        // Clear hash from URL (OAuth/Magic Link fragment)
-        if (window.location.hash) {
-          window.history.replaceState(null, "", window.location.pathname);
-        }
+      }
+      // Always cleanup hash if present (regardless of session validity)
+      if (window.location.hash) {
+        // Delay slightly to allow auth library to read hash if needed
+        setTimeout(() => {
+          if (window.location.hash) {
+            window.history.replaceState(null, "", window.location.pathname);
+          }
+        }, 500);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
+      if (session) {
         syncProfile(session.user.id, session.user.email!);
-        // Clear hash from URL
-        if (window.location.hash) {
-          window.history.replaceState(null, "", window.location.pathname);
-        }
-      } else if (!session) {
+      } else if (event === "SIGNED_OUT") {
         setUser(null);
         setScreen("login");
       }
@@ -123,7 +124,7 @@ export default function App() {
         notifOffers: true,
         notifOrders: true,
       });
-      setScreen("app");
+      // Don't setScreen("app") here; let handleSplashDone handle it
     } else {
       // Create profile if missing
       const newProfile = {
@@ -145,7 +146,7 @@ export default function App() {
         notifOffers: true,
         notifOrders: true,
       });
-      setScreen("app");
+      // Don't setScreen("app") here; let handleSplashDone handle it
     }
 
     // Fetch synced orders
@@ -159,14 +160,26 @@ export default function App() {
   };
 
   const handleSplashDone = () => {
-    if (user) setScreen("app");
-    else setScreen("onboarding");
+    // Check local storage for onboarding
+    const seen = localStorage.getItem("huara_onboarding");
+    
+    if (user) {
+      setScreen("app");
+    } else if (seen) {
+      setScreen("login");
+    } else {
+      setScreen("onboarding");
+    }
   };
 
-  const handleOnboardingDone = () => setScreen("login");
+  const handleOnboardingDone = () => {
+    localStorage.setItem("huara_onboarding", "true");
+    setScreen("login");
+  };
 
   const handleLogin = (u: UserProfile) => {
     // Handled by Supabase onAuthStateChange
+    setScreen("app"); 
   };
 
   const handleLogout = async () => {
