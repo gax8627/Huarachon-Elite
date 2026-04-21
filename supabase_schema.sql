@@ -1,7 +1,7 @@
 -- ============================================================
 -- HUARACHÓN ELITE — Unified Supabase Schema
 -- Shared by: Flutter Mobile App + Next.js Web App
--- Project: dtbsraapjikprvarchyx
+-- Project: cnuvfblsilouuahitpij
 -- Version: 2.0 (Reality-Sync)
 -- ============================================================
 
