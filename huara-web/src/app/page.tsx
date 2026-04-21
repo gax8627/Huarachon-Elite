@@ -111,8 +111,10 @@ export default function App() {
       .eq('id', id)
       .single();
 
+    let finalUser: UserProfile | null = null;
+
     if (profile) {
-      setUser({
+      finalUser = {
         name: profile.full_name || "Huarafan",
         email: email,
         tier: profile.tier || HuaraTier.BRONCE,
@@ -123,8 +125,7 @@ export default function App() {
         hasSeenOnboarding: true,
         notifOffers: true,
         notifOrders: true,
-      });
-      // Don't setScreen("app") here; let handleSplashDone handle it
+      };
     } else {
       // Create profile if missing
       const newProfile = {
@@ -134,7 +135,7 @@ export default function App() {
         tier: HuaraTier.BRONCE,
       };
       await supabase.from('profiles').insert(newProfile);
-      setUser({
+      finalUser = {
         name: email.split('@')[0],
         email,
         tier: HuaraTier.BRONCE,
@@ -145,9 +146,10 @@ export default function App() {
         hasSeenOnboarding: true,
         notifOffers: true,
         notifOrders: true,
-      });
-      // Don't setScreen("app") here; let handleSplashDone handle it
+      };
     }
+
+    setUser(finalUser);
 
     // Fetch synced orders
     const { data: history } = await supabase
@@ -157,6 +159,13 @@ export default function App() {
       .order('created_at', { ascending: false });
     
     if (history) setOrders(history as any);
+
+    // 🚀 NEW: If the splash is ALREADY GONE, but we just got the user, move to app!
+    // This fixed the redirect hang.
+    setScreen((current) => {
+      if (current === "login" || current === "onboarding") return "app";
+      return current;
+    });
   };
 
   const handleSplashDone = () => {
