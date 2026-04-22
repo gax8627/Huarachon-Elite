@@ -309,129 +309,170 @@ export default function App() {
   /* ─── Render ─── */
   return (
     <div
-      className="min-h-screen max-w-sm mx-auto relative"
+      className="min-h-screen relative md:flex"
       style={{ background: "#121212" }}
     >
-      <AnimatePresence mode="wait">
-        {screen === "splash" && (
-          <motion.div key="splash" initial={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <SplashPage onDone={handleSplashDone} />
-          </motion.div>
-        )}
-
-        {screen === "onboarding" && (
-          <motion.div key="onboarding" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <OnboardingPage onDone={handleOnboardingDone} />
-          </motion.div>
-        )}
-
-        {screen === "login" && (
-          <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <LoginPage onLogin={handleLogin} />
-          </motion.div>
-        )}
-
-        {screen === "app" && user && (
-          <motion.div
-            key="app"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col min-h-screen"
-          >
-            {/* Page content */}
-            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "72px" }}>
-              <AnimatePresence mode="wait">
-                {tab === "home" && (
-                  <motion.div key="home" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-                    <HomePage
-                      user={user}
-                      activeOrder={activeOrder}
-                      recentOrders={orders}
-                      onNavigate={(v) => setTab(v as Tab)}
-                      onMarkOrderComplete={handleMarkComplete}
-                      onShareForPoints={handleShare}
-                      onScanQr={handleScanQr}
-                      onLogout={handleLogout}
-                    />
-                  </motion.div>
-                )}
-                {tab === "menu" && (
-                  <motion.div key="menu" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="h-screen flex flex-col">
-                    <MenuPage
-                      user={user}
-                      branches={BRANCHES}
-                      onPlaceOrder={handlePlaceOrder}
-                    />
-                  </motion.div>
-                )}
-                {tab === "rewards" && (
-                  <motion.div key="rewards" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-                    <RewardsPage user={user} onRedeem={handleRedeem} />
-                  </motion.div>
-                )}
-                {tab === "locations" && (
-                  <motion.div key="locations" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-                    <LocationsPage branches={BRANCHES} />
-                  </motion.div>
-                )}
-                {tab === "profile" && (
-                  <motion.div key="profile" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-                    <ProfilePage
-                      user={user}
-                      orders={orders}
-                      onUpdateUser={handleUpdateUser}
-                      onLogout={handleLogout}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+      {/* 💻 Desktop Sidebar Nav */}
+      {screen === "app" && (
+        <aside className="hidden md:flex flex-col w-64 bg-[#0A0A0A] border-r border-white/5 p-6 h-screen sticky top-0">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-[#E31B23]">
+              <img src="/logo.webp" alt="logo" className="w-6 h-6 object-contain" />
             </div>
+            <h1 className="text-xl font-black text-white">Huarafans</h1>
+          </div>
+          
+          <nav className="flex-1 flex flex-col gap-2">
+            {TABS.map(({ id, icon, label }) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className="flex items-center gap-4 px-4 py-3 rounded-xl transition-all group"
+                style={{
+                  background: tab === id ? "rgba(227, 27, 35, 0.1)" : "transparent",
+                  color: tab === id ? "#E31B23" : "rgba(255,255,255,0.5)"
+                }}
+              >
+                <span className="text-xl group-hover:scale-110 transition-transform">{icon}</span>
+                <span className="font-semibold">{label}</span>
+                {tab === id && <motion.div layoutId="nav-pill" className="ml-auto w-1 h-4 rounded-full bg-[#E31B23]" />}
+              </button>
+            ))}
+          </nav>
 
-            {/* Bottom nav */}
-            <nav
-              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm flex items-center justify-around px-2 pt-2 pb-safe z-30"
-              style={{
-                background: "rgba(18,18,18,0.95)",
-                backdropFilter: "blur(20px)",
-                borderTop: "1px solid rgba(255,255,255,0.07)",
-                paddingBottom: "max(12px, env(safe-area-inset-bottom))",
-              }}
+          <div className="mt-auto pt-6 border-t border-white/5">
+             <button onClick={handleLogout} className="flex items-center gap-4 px-4 py-3 text-white/30 hover:text-white transition-colors">
+               <span>🚪</span>
+               <span className="font-medium">Cerrar Sesión</span>
+             </button>
+          </div>
+        </aside>
+      )}
+
+      <main className="flex-1 max-w-sm md:max-w-none mx-auto w-full relative">
+        <AnimatePresence mode="wait">
+          {screen === "splash" && (
+            <motion.div key="splash" initial={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
+              <SplashPage onDone={handleSplashDone} />
+            </motion.div>
+          )}
+
+          {screen === "onboarding" && (
+            <motion.div key="onboarding" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
+              <OnboardingPage onDone={handleOnboardingDone} />
+            </motion.div>
+          )}
+
+          {screen === "login" && (
+            <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
+              <LoginPage onLogin={handleLogin} />
+            </motion.div>
+          )}
+
+          {screen === "app" && user && (
+            <motion.div
+              key="app"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col min-h-screen"
             >
-              {TABS.map(({ id, icon, label }) => {
-                const active = tab === id;
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setTab(id)}
-                    className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all"
-                    style={{ minWidth: "52px" }}
-                  >
-                    <span
-                      className="text-xl transition-transform"
-                      style={{ transform: active ? "scale(1.15)" : "scale(1)" }}
-                    >
-                      {icon}
-                    </span>
-                    <span
-                      className="text-xs font-medium transition-colors"
-                      style={{ color: active ? "#E31B23" : "rgba(255,255,255,0.3)" }}
-                    >
-                      {label}
-                    </span>
-                    {active && (
-                      <motion.div
-                        layoutId="nav-dot"
-                        className="w-1 h-1 rounded-full"
-                        style={{ background: "#E31B23" }}
-                      />
+              {/* Page content */}
+              <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "env(safe-area-inset-bottom, 72px)" }}>
+                <div className="max-w-5xl mx-auto md:p-8">
+                  <AnimatePresence mode="wait">
+                    {tab === "home" && (
+                      <motion.div key="home" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                        <HomePage
+                          user={user}
+                          activeOrder={activeOrder}
+                          recentOrders={orders}
+                          onNavigate={(v) => setTab(v as Tab)}
+                          onMarkOrderComplete={handleMarkComplete}
+                          onShareForPoints={handleShare}
+                          onScanQr={handleScanQr}
+                          onLogout={handleLogout}
+                        />
+                      </motion.div>
                     )}
-                  </button>
-                );
-              })}
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    {tab === "menu" && (
+                      <motion.div key="menu" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="md:h-auto flex flex-col">
+                        <MenuPage
+                          user={user}
+                          branches={BRANCHES}
+                          onPlaceOrder={handlePlaceOrder}
+                        />
+                      </motion.div>
+                    )}
+                    {tab === "rewards" && (
+                      <motion.div key="rewards" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                        <RewardsPage user={user} onRedeem={handleRedeem} />
+                      </motion.div>
+                    )}
+                    {tab === "locations" && (
+                      <motion.div key="locations" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                        <LocationsPage branches={BRANCHES} />
+                      </motion.div>
+                    )}
+                    {tab === "profile" && (
+                      <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                        <ProfilePage
+                          user={user}
+                          orders={orders}
+                          onUpdateUser={handleUpdateUser}
+                          onLogout={handleLogout}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* 📱 Mobile Bottom nav (hidden on md) */}
+              <nav
+                className="fixed bottom-0 left-0 w-full md:hidden flex items-center justify-around px-2 pt-2 pb-safe z-30"
+                style={{
+                  background: "rgba(18,18,18,0.95)",
+                  backdropFilter: "blur(20px)",
+                  borderTop: "1px solid rgba(255,255,255,0.07)",
+                  paddingBottom: "max(12px, env(safe-area-inset-bottom))",
+                }}
+              >
+                {TABS.map(({ id, icon, label }) => {
+                  const active = tab === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => setTab(id)}
+                      className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all"
+                      style={{ minWidth: "52px" }}
+                    >
+                      <span
+                        className="text-xl transition-transform"
+                        style={{ transform: active ? "scale(1.15)" : "scale(1)" }}
+                      >
+                        {icon}
+                      </span>
+                      <span
+                        className="text-xs font-medium transition-colors"
+                        style={{ color: active ? "#E31B23" : "rgba(255,255,255,0.3)" }}
+                      >
+                        {label}
+                      </span>
+                      {active && (
+                        <motion.div
+                          layoutId="nav-dot"
+                          className="w-1 h-1 rounded-full"
+                          style={{ background: "#E31B23" }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
 
       {/* ── Floating Huara-Concierge Button (always visible in-app) ── */}
       {screen === "app" && (

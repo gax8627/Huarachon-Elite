@@ -128,49 +128,54 @@ export default function RewardsPage({ user, onRedeem }: Props) {
       </motion.div>
 
       {/* Rewards grid */}
-      <p className="text-white/50 text-xs font-semibold uppercase tracking-wider -mb-1">Canjear por puntos</p>
-      <div className="grid grid-cols-2 gap-3">
-        {REWARDS.map((item, i) => {
-          const canAfford = user.balance >= item.pointsCost;
-          return (
-            <motion.button
-              key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06 }}
-              onClick={() => canAfford && setSelected(item)}
-              className="rounded-2xl overflow-hidden text-left transition-transform active:scale-95"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: `1px solid ${canAfford ? "rgba(255,215,0,0.15)" : "rgba(255,255,255,0.06)"}`,
-                opacity: canAfford ? 1 : 0.45,
-              }}
-            >
-              {item.image ? (
-                <div className="h-24 overflow-hidden aspect-square">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div
-                  className="h-24 aspect-square flex items-center justify-center text-3xl"
-                  style={{ background: "rgba(255,215,0,0.06)" }}
-                >
-                  🌮
-                </div>
-              )}
-              <div className="p-3">
-                <p className="text-white text-xs font-semibold line-clamp-2">{item.name}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs" style={{ color: "#FFD700" }}>⭐</span>
-                    <span className="text-xs font-bold" style={{ color: "#FFD700" }}>{item.pointsCost}</span>
+      <div className="flex flex-col gap-4">
+        <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Canjear por puntos</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {REWARDS.map((item, i) => {
+            const canAfford = user.balance >= item.pointsCost;
+            return (
+              <motion.button
+                key={item.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06 }}
+                onClick={() => canAfford && setSelected(item)}
+                className="group rounded-2xl overflow-hidden text-left transition-all active:scale-95 hover:bg-white/10"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: `1px solid ${canAfford ? "rgba(255,215,0,0.15)" : "rgba(255,255,255,0.06)"}`,
+                  opacity: canAfford ? 1 : 0.45,
+                }}
+              >
+                {item.image ? (
+                  <div className="h-32 md:h-40 overflow-hidden relative">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    {!canAfford && <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-[2px]">
+                      <span className="text-[10px] font-black bg-white/10 px-2 py-1 rounded-full text-white/40">FALTAN PUNTOS</span>
+                    </div>}
                   </div>
-                  <span className="text-xs" style={{ color: canAfford ? "#FFD700" : "rgba(255,255,255,0.3)" }}>›</span>
+                ) : (
+                  <div
+                    className="h-32 md:h-40 flex items-center justify-center text-4xl"
+                    style={{ background: "rgba(255,215,0,0.06)" }}
+                  >
+                    🌮
+                  </div>
+                )}
+                <div className="p-4">
+                  <p className="text-white text-sm font-bold line-clamp-1 group-hover:text-[#FFD700] transition-colors">{item.name}</p>
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm" style={{ color: "#FFD700" }}>⭐</span>
+                      <span className="text-sm font-black" style={{ color: "#FFD700" }}>{item.pointsCost}</span>
+                    </div>
+                    <span className="text-xs font-black transition-transform group-hover:translate-x-1" style={{ color: canAfford ? "#FFD700" : "rgba(255,255,255,0.3)" }}>CANJEAR ›</span>
+                  </div>
                 </div>
-              </div>
-            </motion.button>
-          );
-        })}
+              </motion.button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Birthday card */}

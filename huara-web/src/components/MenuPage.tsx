@@ -198,7 +198,7 @@ export default function MenuPage({ user, branches, onPlaceOrder }: Props) {
 
       {/* Items */}
       <div className="flex-1 overflow-y-auto px-4 pb-24 pt-2">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map((item, i) => (
             <motion.div
               key={item.id}
@@ -246,16 +246,16 @@ export default function MenuPage({ user, branches, onPlaceOrder }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
             style={{ background: "rgba(0,0,0,0.8)" }}
             onClick={() => setCustomizing(null)}
           >
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25 }}
-              className="w-full max-w-sm rounded-t-3xl p-5 pb-8"
+              className="w-full max-w-sm rounded-t-3xl md:rounded-3xl p-5 pb-8"
               style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)" }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -300,16 +300,16 @@ export default function MenuPage({ user, branches, onPlaceOrder }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
             style={{ background: "rgba(0,0,0,0.8)" }}
             onClick={() => setShowBranches(false)}
           >
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25 }}
-              className="w-full max-w-sm rounded-t-3xl p-5 pb-8"
+              className="w-full max-w-sm rounded-t-3xl md:rounded-3xl p-5 pb-8"
               style={{ background: "#1a1a1a" }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -344,16 +344,16 @@ export default function MenuPage({ user, branches, onPlaceOrder }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
             style={{ background: "rgba(0,0,0,0.85)" }}
             onClick={() => { setShowCart(false); setCheckoutStep("cart"); }}
           >
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25 }}
-              className="w-full max-w-sm rounded-t-3xl flex flex-col max-h-[85vh]"
+              className="w-full max-w-sm rounded-t-3xl md:rounded-3xl flex flex-col max-h-[85vh]"
               style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)" }}
               onClick={(e) => e.stopPropagation()}
             >
