@@ -15,6 +15,8 @@ import RewardsPage from "../components/RewardsPage";
 import LocationsPage from "../components/LocationsPage";
 import ProfilePage from "../components/ProfilePage";
 import { supabase } from "../lib/supabase";
+import { registerPushNotifications } from "../lib/notifications";
+import { trackUserInsight } from "../lib/insights";
 import { getHuaraResponse } from "../lib/gemini";
 import ChatBot from "../components/ChatBot";
 
@@ -115,6 +117,7 @@ export default function App() {
 
     if (profile) {
       finalUser = {
+        id,
         name: profile.full_name || "Huarafan",
         email: email,
         tier: profile.tier || HuaraTier.BRONCE,
@@ -136,6 +139,7 @@ export default function App() {
       };
       await supabase.from('profiles').insert(newProfile);
       finalUser = {
+        id,
         name: email.split('@')[0],
         email,
         tier: HuaraTier.BRONCE,
@@ -150,6 +154,7 @@ export default function App() {
     }
 
     setUser(finalUser);
+    if (id) registerPushNotifications(id);
 
     // Fetch synced orders
     const { data: history } = await supabase
@@ -198,6 +203,7 @@ export default function App() {
   /* ─── Order flow (simulates POS pipeline) ─── */
   const handlePlaceOrder = useCallback(async (order: Order) => {
     setActiveOrder(order);
+    if (user) trackUserInsight(user.id, 'add_to_cart', { order_id: order.id, total: order.total, items: order.items.length });
     
     // Unify: Save to Supabase
     const { data: { session } } = await supabase.auth.getSession();
@@ -247,6 +253,7 @@ export default function App() {
   /* ─── QR scan → earn points ─── */
   const handleScanQr = useCallback(async (decodedText: string) => {
     if (!user) return;
+    trackUserInsight(user.id, 'view_item', { action: 'qr_scan', code: decodedText.slice(0, 30) });
     let points = 0;
     const manual = decodedText.match(/ADD[_-]?(\d+)/i);
     if (manual) points = parseInt(manual[1]);
@@ -276,6 +283,7 @@ export default function App() {
   /* ─── Social share ─── */
   const handleShare = useCallback(async () => {
     if (!user) return;
+    trackUserInsight(user.id, 'view_promo', { action: 'social_share' });
     const today = new Date().toDateString();
     if (user.lastShareDate === today) return;
     

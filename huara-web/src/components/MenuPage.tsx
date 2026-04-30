@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { UserProfile, Order, CartItem, MenuItem, Branch } from "../types";
 import { HuaraTier, PickupMethod, PaymentMethod, OrderStatus } from "../types";
+import { trackUserInsight } from "../lib/insights";
 
 /* ─── Real menu data (synced with Flutter) ─── */
 const ALL_ITEMS: MenuItem[] = [
@@ -85,12 +86,16 @@ export default function MenuPage({ user, branches, onPlaceOrder }: Props) {
       setCustomizing(item);
       setSalsa("Roja 🌶️");
       setExtras([]);
+      // Track insight: User is interested in this item
+      trackUserInsight(user.id, 'view_item', { item_id: item.id, name: item.name });
     } else {
       pushCart(item, "Sin Salsa", []);
     }
   };
 
   const pushCart = (item: MenuItem, salsaChoice: string, extrasChoice: string[]) => {
+    // Track insight: Intent to buy
+    trackUserInsight(user.id, 'add_to_cart', { item_id: item.id, name: item.name });
     setCart((prev) => {
       const key = item.id + salsaChoice;
       const existing = prev.find((c) => c.id === key);

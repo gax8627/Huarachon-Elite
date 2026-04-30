@@ -103,6 +103,7 @@ export interface Branch {
 }
 
 export interface UserProfile {
+  id: string;
   name: string;
   email: string;
   tier: HuaraTier;

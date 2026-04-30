@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import type { UserProfile, RewardItem } from "../types";
 import { HuaraTier } from "../types";
+import { trackUserInsight } from "../lib/insights";
 
 const REWARDS: RewardItem[] = [
   { id: "r1", name: "Taco de Asada", pointsCost: 500, image: "https://tb-static.uber.com/prod/image-proc/processed_images/1ac8ab6d9247958e9397cd363ddbb4b5/bc9c318a9c96996e2d990faf2b0c65f6.jpeg", category: "Tacos" },
@@ -37,6 +39,10 @@ export default function RewardsPage({ user, onRedeem }: Props) {
   const tierColor = TIER_COLORS[user.tier];
   const tierNext = TIER_NEXT_VISITS[user.tier];
   const tierProgress = user.tier === HuaraTier.ORO ? 100 : Math.min((user.visitCount / tierNext) * 100, 100);
+
+  useEffect(() => {
+    trackUserInsight(user.id, 'check_rewards');
+  }, [user.id]);
 
   const handleRedeem = () => {
     if (!selected) return;
@@ -139,7 +145,12 @@ export default function RewardsPage({ user, onRedeem }: Props) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
-                onClick={() => canAfford && setSelected(item)}
+                onClick={() => {
+                  if (canAfford) {
+                    setSelected(item);
+                    trackUserInsight(user.id, 'view_item', { reward_id: item.id, name: item.name });
+                  }
+                }}
                 className="group rounded-2xl overflow-hidden text-left transition-all active:scale-95 hover:bg-white/10"
                 style={{
                   background: "rgba(255,255,255,0.05)",
