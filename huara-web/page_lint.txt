@@ -1,0 +1,39 @@
+
+/Users/gax8627/Huarachon-App/huara-web/src/app/page.tsx
+   20:10  warning  'getHuaraResponse' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   83:9   error    Error: Cannot access variable before it is declared
+
+`syncProfile` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/gax8627/Huarachon-App/huara-web/src/app/page.tsx:83:9
+  81 |     supabase.auth.getSession().then(({ data: { session } }) => {
+  82 |       if (session) {
+> 83 |         syncProfile(session.user.id, session.user.email!);
+     |         ^^^^^^^^^^^ `syncProfile` accessed before it is declared
+  84 |       }
+  85 |       // Always cleanup hash if present (regardless of session validity)
+  86 |       if (window.location.hash) {
+
+/Users/gax8627/Huarachon-App/huara-web/src/app/page.tsx:108:3
+  106 |   }, []);
+  107 |
+> 108 |   const syncProfile = async (id: string, email: string) => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 109 |     // Pull from Supabase (Unifies with Mobile App)
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 110 |     const { data: profile } = await supabase
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 173 |     });
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 174 |   };
+      | ^^^^^ `syncProfile` is declared here
+  175 |
+  176 |   const handleSplashDone = () => {
+  177 |     // Check local storage for onboarding  react-hooks/immutability
+  166:39  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  194:24  warning  'u' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  328:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @next/next/no-img-element
+
+✖ 5 problems (2 errors, 3 warnings)
+

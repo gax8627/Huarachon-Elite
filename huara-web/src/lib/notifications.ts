@@ -1,7 +1,6 @@
 import { supabase } from './supabase';
 
-// Llave pública VAPID para Web Push (generada con web-push)
-// PRIVATE KEY (solo en Supabase secrets): T7bXAISQkzHwdNgnRwIf4xUR-hK-y7tT4Xa-YVkJgvQ
+// VAPID public key for Web Push (private key is stored as a Supabase secret)
 const VAPID_PUBLIC_KEY = 'BDKKXQjDcwGOhpIEsusTMV-RckIcJZ1kc88rvRbSjVtl80AY0sx7gdFdRodhtCRwLDrvZ-Ujkjo4aiUDf6J2DBQ';
 
 export async function registerPushNotifications(userId: string) {

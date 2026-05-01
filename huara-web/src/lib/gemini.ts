@@ -72,8 +72,7 @@ const FALLBACK =
   "¡Epa! No entendí muy bien esa pregunta. 😅 Puedo ayudarte con info sobre **puntos**, **sucursales**, **horarios**, **menú** o **promociones**. ¿Qué necesitas saber?";
 
 export async function getHuaraResponse(
-  message: string,
-  _history: unknown[] = []
+  message: string
 ): Promise<string> {
   await new Promise((r) => setTimeout(r, 300)); // Natural feel delay
 

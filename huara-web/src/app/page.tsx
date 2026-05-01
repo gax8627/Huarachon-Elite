@@ -17,7 +17,7 @@ import ProfilePage from "../components/ProfilePage";
 import { supabase } from "../lib/supabase";
 import { registerPushNotifications } from "../lib/notifications";
 import { trackUserInsight } from "../lib/insights";
-import { getHuaraResponse } from "../lib/gemini";
+import { getHuaraResponse as _getHuaraResponse } from "../lib/gemini";
 import ChatBot from "../components/ChatBot";
 
 /* ─── Branches (real Mexicali locations) ─── */
@@ -76,36 +76,7 @@ export default function App() {
   const [showChat, setShowChat] = useState(false);
 
   /* ─── Supabase Unification ─── */
-  useEffect(() => {
-    // 1. Handle Auth State
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        syncProfile(session.user.id, session.user.email!);
-      }
-      // Always cleanup hash if present (regardless of session validity)
-      if (window.location.hash) {
-        // Delay slightly to allow auth library to read hash if needed
-        setTimeout(() => {
-          if (window.location.hash) {
-            window.history.replaceState(null, "", window.location.pathname);
-          }
-        }, 500);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        syncProfile(session.user.id, session.user.email!);
-      } else if (event === "SIGNED_OUT") {
-        setUser(null);
-        setScreen("login");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const syncProfile = async (id: string, email: string) => {
+  const syncProfile = useCallback(async (id: string, email: string) => {
     // Pull from Supabase (Unifies with Mobile App)
     const { data: profile } = await supabase
       .from('profiles')
@@ -163,7 +134,7 @@ export default function App() {
       .eq('user_id', id)
       .order('created_at', { ascending: false });
     
-    if (history) setOrders(history as any);
+    if (history) setOrders(history as unknown as Order[]);
 
     // 🚀 NEW: If the splash is ALREADY GONE, but we just got the user, move to app!
     // This fixed the redirect hang.
@@ -171,7 +142,36 @@ export default function App() {
       if (current === "login" || current === "onboarding") return "app";
       return current;
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    // 1. Handle Auth State
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        syncProfile(session.user.id, session.user.email!);
+      }
+      // Always cleanup hash if present (regardless of session validity)
+      if (window.location.hash) {
+        // Delay slightly to allow auth library to read hash if needed
+        setTimeout(() => {
+          if (window.location.hash) {
+            window.history.replaceState(null, "", window.location.pathname);
+          }
+        }, 500);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        syncProfile(session.user.id, session.user.email!);
+      } else if (event === "SIGNED_OUT") {
+        setUser(null);
+        setScreen("login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [syncProfile]);
 
   const handleSplashDone = () => {
     // Check local storage for onboarding

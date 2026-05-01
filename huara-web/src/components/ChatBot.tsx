@@ -28,7 +28,7 @@ export default function ChatBot({ onClose }: { onClose: () => void }) {
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }]
       }));
-      const response = await getHuaraResponse(userMsg, history);
+      const response = await getHuaraResponse(userMsg);
       setMessages(prev => [...prev, { role: "assistant", content: response }]);
     } catch (e) {
       setMessages(prev => [...prev, { role: "assistant", content: "¡Epa! No pude conectarme. ¿Lo intentamos de nuevo?" }]);

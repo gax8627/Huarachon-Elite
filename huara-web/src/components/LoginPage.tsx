@@ -18,7 +18,9 @@ export default function LoginPage({ onLogin }: Props) {
 
   // Magic Link — passwordless, zero-cost
   const sendMagicLink = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) { setError("Por favor ingresa tu correo."); return; }
+    if (!emailRegex.test(email)) { setError("Por favor ingresa un correo válido."); return; }
     setError("");
     setLoading(true);
     const { error: err } = await supabase.auth.signInWithOtp({
